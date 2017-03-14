@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Windows_VM_Benchmark
 {
@@ -19,7 +20,7 @@ namespace Windows_VM_Benchmark
         private readonly double canvasWidth;
         private readonly double canvasHeight;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public string Name { get; set; } = nameof(TwoDBenchmark);
 
@@ -86,7 +87,7 @@ namespace Windows_VM_Benchmark
                                 Canvas.SetLeft(rectangle, x);
                                 Canvas.SetTop(rectangle, y);
                                 canvas.InvalidateVisual();
-                            });
+                            }, DispatcherPriority.Normal);
                         }
                     }
                     renderRectangleWatch.Stop();

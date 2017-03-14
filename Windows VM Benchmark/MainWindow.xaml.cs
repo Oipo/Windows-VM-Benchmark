@@ -49,12 +49,16 @@ namespace Windows_VM_Benchmark
 
             if (checkBoxCPU.IsChecked.HasValue && checkBoxCPU.IsChecked.Value)
             {
-                benchmarks.Add(new CpuBenchmark());
+                benchmarks.Add(new CpuBenchmark(1));
+                benchmarks.Add(new CpuBenchmark(2));
+                benchmarks.Add(new CpuBenchmark(3));
+                benchmarks.Add(new CpuBenchmark(4));
             }
 
             if(checkBoxIO.IsChecked.HasValue && checkBoxIO.IsChecked.Value)
             {
-                benchmarks.Add(new IoBenchmark());
+                benchmarks.Add(new IoBenchmark("file1.txt"));
+                benchmarks.Add(new IoBenchmark("file2.txt"));
             }
 
             if(checkBox2D.IsChecked.HasValue && checkBox2D.IsChecked.Value)
@@ -88,7 +92,7 @@ namespace Windows_VM_Benchmark
                 return;
             }
 
-            logger.Info("Stopping benchmarks");
+            logger.Info($"Stopping benchmarks: {string.Join(", ", benchmarks.Select(benchmark => benchmark.Name))}");
 
             tokenSource.Cancel();
 
@@ -109,7 +113,7 @@ namespace Windows_VM_Benchmark
             benchmarkTasks.Clear();
             benchmarks.Clear();
 
-            logger.Info($"Stopped benchmarks: {string.Join(",", benchmarks.Select(benchmark => benchmark.Name))}");
+            logger.Info($"Stopped benchmarks");
         }
     }
 }

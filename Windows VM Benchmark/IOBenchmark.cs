@@ -10,22 +10,27 @@ namespace Windows_VM_Benchmark
 {
     public class IoBenchmark : IBenchmark
     {
-        const string FILE_READ_WRITE_TASK_PATH = "FileReadWriteTask.txt";
         const int FILE_READ_WRITE_BLOCK_SIZE = 8192;
-        const int MAX_ITERATIONS = 10000;
+        const int MAX_ITERATIONS = 20000;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public string Name { get; set; } = nameof(IoBenchmark);
 
         private Stopwatch fileReadWriteWatch;
         private byte[] fileReadWriteBlockInput;
         private byte[] fileReadWriteBlockOutput;
+        private readonly string filename;
+
+        public IoBenchmark(string filename)
+        {
+            this.filename = filename;
+        }
 
         public List<Task> StartBenchmark(CancellationToken token)
         {
             List<Task> tasks = new List<Task>();
-            File.Create(FILE_READ_WRITE_TASK_PATH).Dispose();
+            File.Create(filename).Dispose();
 
             fileReadWriteWatch = new Stopwatch();
             fileReadWriteBlockInput = new byte[FILE_READ_WRITE_BLOCK_SIZE];
@@ -38,9 +43,9 @@ namespace Windows_VM_Benchmark
 
         public void Cleanup()
         {
-            if (File.Exists(FILE_READ_WRITE_TASK_PATH))
+            if (File.Exists(filename))
             {
-                File.Delete(FILE_READ_WRITE_TASK_PATH);
+                File.Delete(filename);
             }
 
             fileReadWriteWatch = null;
@@ -50,7 +55,7 @@ namespace Windows_VM_Benchmark
 
         private Task CreateFileReadWriteTask(CancellationToken token)
         {
-            logger.Info($"Starting task {nameof(CreateFileReadWriteTask)}");
+            logger.Info($"Starting task {nameof(CreateFileReadWriteTask)} - {filename}");
             Random random = new Random();
             random.NextBytes(fileReadWriteBlockInput);
 
@@ -61,7 +66,7 @@ namespace Windows_VM_Benchmark
                 {
                     if (token.IsCancellationRequested)
                     {
-                        logger.Info($"Stopping task {nameof(CreateFileReadWriteTask)}");
+                        logger.Info($"Stopping task {nameof(CreateFileReadWriteTask)} - {filename}");
                         return;
                     }
 
@@ -69,7 +74,7 @@ namespace Windows_VM_Benchmark
                     int bytesRead = 0;
 
                     fileReadWriteWatch.Start();
-                    using (var writer = new BinaryWriter(File.Open(FILE_READ_WRITE_TASK_PATH, FileMode.Open)))
+                    using (var writer = new BinaryWriter(File.Open(filename, FileMode.Open)))
                     {
                         for (int i = 0; i < MAX_ITERATIONS; i++)
                         {
@@ -78,7 +83,7 @@ namespace Windows_VM_Benchmark
                         }
                         writer.Flush();
                     }
-                    using (var fs = new BinaryReader(File.Open(FILE_READ_WRITE_TASK_PATH, FileMode.Open)))
+                    using (var fs = new BinaryReader(File.Open(filename, FileMode.Open)))
                     {
                         for (int i = 0; i < MAX_ITERATIONS; i++)
                         {
@@ -93,20 +98,12 @@ namespace Windows_VM_Benchmark
                                     break;
                                 }
                             }
-
-                            /*for(int j = 0; j < fileReadWriteBlockOutput.Length; j++)
-                            {
-                                if(fileReadWriteBlockInput[j] != fileReadWriteBlockOutput[j])
-                                {
-                                    throw new InvalidOperationException("Verification failure");
-                                }
-                            }*/
                         }
                     }
 
                     fileReadWriteWatch.Stop();
                     float mbytesPerSec = (bytesWritten + bytesRead) / 1024 / 1024 / ((float)fileReadWriteWatch.ElapsedMilliseconds / 1000);
-                    logger.Info($"{nameof(CreateFileReadWriteTask)} {fileReadWriteWatch.ElapsedMilliseconds} ms - {mbytesPerSec:#,###} MB/s - {bytesWritten} bytes written - {bytesRead} - bytesRead");
+                    logger.Info($"{nameof(CreateFileReadWriteTask)} {fileReadWriteWatch.ElapsedMilliseconds} ms - {mbytesPerSec:#,###} MB/s - {bytesWritten} bytes written - {bytesRead} - bytesRead - {filename}");
                     fileReadWriteWatch.Reset();
                 }
             });

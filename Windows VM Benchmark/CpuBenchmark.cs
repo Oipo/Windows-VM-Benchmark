@@ -12,9 +12,9 @@ namespace Windows_VM_Benchmark
     {
         const int INTEGER_MATH_SIZE = 4096;
         const int SIMD_MATH_SIZE = 4096;
-        const int MAX_ITERATIONS = 10000;
+        const int MAX_ITERATIONS = 20000;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private int[] integerMathIntsInput;
         private int[] integerMathIntsOutput;
@@ -26,6 +26,12 @@ namespace Windows_VM_Benchmark
         private Stopwatch simdMathWatch;
 
         public string Name { get; set; } = nameof(CpuBenchmark);
+        private readonly int id;
+
+        public CpuBenchmark(int id)
+        {
+            this.id = id;
+        }
 
         public List<Task> StartBenchmark(CancellationToken token)
         {
@@ -65,7 +71,7 @@ namespace Windows_VM_Benchmark
 
         private Task CreateIntegerMathTask(CancellationToken token)
         {
-            logger.Info($"Starting task {nameof(CreateIntegerMathTask)}");
+            logger.Info($"Starting task {nameof(CreateIntegerMathTask)} - {id}");
             Random random = new Random();
             for (int i = 0; i < INTEGER_MATH_SIZE; i++)
             {
@@ -78,7 +84,7 @@ namespace Windows_VM_Benchmark
                 {
                     if (token.IsCancellationRequested)
                     {
-                        logger.Info($"Stopping task {nameof(CreateIntegerMathTask)}");
+                        logger.Info($"Stopping task {nameof(CreateIntegerMathTask)} - {id}");
                         return;
                     }
 
@@ -91,7 +97,7 @@ namespace Windows_VM_Benchmark
                         }
                     }
                     integerMathWatch.Stop();
-                    logger.Info($"{nameof(CreateIntegerMathTask)} {integerMathWatch.ElapsedMilliseconds}");
+                    logger.Info($"{nameof(CreateIntegerMathTask)} - {id} - {integerMathWatch.ElapsedMilliseconds}");
                     integerMathWatch.Reset();
                 }
             });
@@ -99,7 +105,7 @@ namespace Windows_VM_Benchmark
 
         private Task CreateSimdMathTask(CancellationToken token)
         {
-            logger.Info($"Starting task {nameof(CreateSimdMathTask)}");
+            logger.Info($"Starting task {nameof(CreateSimdMathTask)} - {id}");
             Random random = new Random();
             for (int i = 0; i < SIMD_MATH_SIZE; i++)
             {
@@ -112,7 +118,7 @@ namespace Windows_VM_Benchmark
                 {
                     if (token.IsCancellationRequested)
                     {
-                        logger.Info($"Stopping task {nameof(CreateSimdMathTask)}");
+                        logger.Info($"Stopping task {nameof(CreateSimdMathTask)} - {id}");
                         return;
                     }
 
@@ -125,7 +131,7 @@ namespace Windows_VM_Benchmark
                         }
                     }
                     simdMathWatch.Stop();
-                    logger.Info($"{nameof(CreateSimdMathTask)} {simdMathWatch.ElapsedMilliseconds}");
+                    logger.Info($"{nameof(CreateSimdMathTask)} - {id} - {simdMathWatch.ElapsedMilliseconds}");
                     simdMathWatch.Reset();
                 }
             });
